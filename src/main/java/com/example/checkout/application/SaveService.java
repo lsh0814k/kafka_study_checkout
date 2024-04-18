@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ public class SaveService {
     private static final String CHECKOUT_COMPLETE_TOPIC_NAME = "checkout.complete.v1";
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final CheckOutRepository checkOutRepository;
-    private final ModelMapper modelMapper = new ModelMapper();
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -55,7 +53,12 @@ public class SaveService {
     }
 
     private CheckOutEntity saveDatabase(CheckOutDto checkOutDto) {
-        CheckOutEntity entity = modelMapper.map(checkOutDto, CheckOutEntity.class);
+        CheckOutEntity entity =CheckOutEntity.builder()
+                .memberId(checkOutDto.getMemberId())
+                .productId(checkOutDto.getProductId())
+                .amount(checkOutDto.getAmount())
+                .shippingAddress(checkOutDto.getShippingAddress())
+                .build();
 
         return checkOutRepository.save(entity);
     }
